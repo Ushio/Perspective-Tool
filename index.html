@@ -9,7 +9,7 @@
 <main class="container">
     <section>
         <!-- https://get.foundation/building-blocks/blocks/input-number-group.html -->
-
+        <legend>複製</legend>
         <div class="grid">
         <div class="input-group input-number-group">
             <h4 style="width: 100;">+X</h4>
@@ -68,6 +68,19 @@
             <input id="dup_neg_x_axis" min=0 type="number" name="number" value=0>
         </div>
         </div> -->
+    </section>
+    <section>
+        <legend>回転</legend>
+        <div class="input-group input-number-group">
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="rotation" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+        </div>
     </section>
 </main>
 
@@ -146,6 +159,7 @@
     let g_dup_neg_x_axis = 0;
     let g_dup_pos_y_axis = 0;
     let g_dup_neg_y_axis = 0;
+    let g_rotaiton = 0;
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -255,33 +269,41 @@
         }
         g_perspective_matrix = getPerspectiveTransform(src_xs, src_ys, dst_xs, dst_ys);
         
+        // for(let i = 0 ; i < 4 ; i++)
+        // {
+        //     rotated = math.rotate([src_xs[i], src_ys[i]], g_rotaiton / 360.0 * math.pi * 2.0);
+        //     src_xs[i] = rotated[0];
+        //     src_ys[i] = rotated[1];
+        // }
+
+
         // drawlayer.remove(dots);
-        for(let i = 0 ; i < dots.length ; i++)
-        {
-            dots[i].remove();
-        }
-        dots = [];
+        // for(let i = 0 ; i < dots.length ; i++)
+        // {
+        //     dots[i].remove();
+        // }
+        // dots = [];
 
-        const N = 10;
-        for (let y = 0; y < N; y++)
-        {
-            for (let x = 0; x < N; x++)
-            {
-                const src_x = lerp(-1.0, +1.0, x / (N - 1));
-                const src_y = lerp(-1.0, +1.0, y / (N - 1));
+        // const N = 10;
+        // for (let y = 0; y < N; y++)
+        // {
+        //     for (let x = 0; x < N; x++)
+        //     {
+        //         const src_x = lerp(-1.0, +1.0, x / (N - 1));
+        //         const src_y = lerp(-1.0, +1.0, y / (N - 1));
                 
-                const p_xy = getPerspectivePoint(g_perspective_matrix, src_x, src_y);
-                const circle = new Konva.Circle({
-                    x: p_xy[0],
-                    y: p_xy[1],
-                    radius: 3,
-                    fill: 'black'
-                });
+        //         const p_xy = getPerspectivePoint(g_perspective_matrix, src_x, src_y);
+        //         const circle = new Konva.Circle({
+        //             x: p_xy[0],
+        //             y: p_xy[1],
+        //             radius: 3,
+        //             fill: 'black'
+        //         });
 
-                drawlayer.add(circle);
-                dots.push(circle);
-            }
-        }
+        //         drawlayer.add(circle);
+        //         dots.push(circle);
+        //     }
+        // }
 
 
         // Duplication
@@ -291,9 +313,9 @@
         }
         duplicates = [];
         
-        function duplicate_square(n, x_step, y_step)
+        function duplicate_square(n, x_step, y_step, rotation)
         {
-            for(let i = 1 ; i < n + 1; i++)
+            for(let i = 0 ; i < n + 1; i++)
             {
                 let points = [];
                 let points_for_convex = [];
@@ -301,7 +323,9 @@
                 {
                     const src_x = src_xs[j] + i * 2.0 * x_step;
                     const src_y = src_ys[j] + i * 2.0 * y_step;
-                    const p_xy = getPerspectivePoint(g_perspective_matrix, src_x, src_y);
+
+                    const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
+                    const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
 
                     points.push(p_xy[0]);
                     points.push(p_xy[1]);
@@ -347,64 +371,11 @@
                 duplicates.push(polygon);
             }
         }
-        
-        duplicate_square(g_dup_pos_x_axis, +1, 0);
-        duplicate_square(g_dup_neg_x_axis, -1, 0);
-        duplicate_square(g_dup_pos_y_axis, 0, +1);
-        duplicate_square(g_dup_neg_y_axis, 0, -1);
-        // for(let i = 1 ; i < g_dup_pos_x_axis + 1; i++)
-        // {
-        //     let points = [];
-        //     let points_for_convex = [];
-        //     for(let j = 0 ; j < 4 ; j++)
-        //     {
-        //         const src_x = src_xs[j] + i * 2.0;
-        //         const src_y = src_ys[j];
-        //         const p_xy = getPerspectivePoint(g_perspective_matrix, src_x, src_y);
 
-        //         points.push(p_xy[0]);
-        //         points.push(p_xy[1]);
-        //         points_for_convex.push([p_xy[0], p_xy[1]]);
-        //     }
-
-        //     const isConvex = (arr = []) => {
-        //         const { length } = arr;
-        //         let pre = 0, curr = 0;
-                
-        //         for (let i = 0; i < length; ++i) {
-        //             // Calculate edge vectors
-        //             let dx1 = arr[(i + 1) % length][0] - arr[i][0];
-        //             let dx2 = arr[(i + 2) % length][0] - arr[(i + 1) % length][0];
-        //             let dy1 = arr[(i + 1) % length][1] - arr[i][1];
-        //             let dy2 = arr[(i + 2) % length][1] - arr[(i + 1) % length][1];
-                    
-        //             // Calculate cross product
-        //             curr = dx1 * dy2 - dx2 * dy1;
-                    
-        //             if (curr != 0) {
-        //                 // Check if signs are different
-        //                 if ((curr > 0 && pre < 0) || (curr < 0 && pre > 0))
-        //                     return false;
-        //                 else
-        //                     pre = curr;
-        //             }
-        //         }
-        //         return true;
-        //     };
-        //     if (isConvex(points_for_convex) == false)
-        //     {
-        //         break;
-        //     }
-
-        //     const polygon = new Konva.Line({
-        //         points: points,
-        //         stroke: 'black',
-        //         strokeWidth: 1,
-        //         closed: true
-        //     });
-        //     drawlayer.add(polygon);
-        //     duplicates.push(polygon);
-        // }
+        duplicate_square(g_dup_pos_x_axis, +1, 0, g_rotaiton);
+        duplicate_square(g_dup_neg_x_axis, -1, 0, g_rotaiton);
+        duplicate_square(g_dup_pos_y_axis, 0, +1, g_rotaiton);
+        duplicate_square(g_dup_neg_y_axis, 0, -1, g_rotaiton);
 
         drawlayer.batchDraw();
     }
@@ -413,12 +384,25 @@
     $('.input-number-increment').click(function() {
         let $input = $(this).parents('.input-number-group').find('.input-number');
         let val = parseInt($input.val(), 10);
-        $input.val(val + 1).trigger('input');
+
+        let step = 1;
+        if($input.attr('id') == "rotation")
+        {
+            step = 15;
+        }
+
+        $input.val(val + step).trigger('input');
     });
 
     $('.input-number-decrement').click(function() {
         let $input = $(this).parents('.input-number-group').find('.input-number');
         let val = parseInt($input.val(), 10);
+
+        if($input.attr('id') == "rotation")
+        {
+            $input.val(val - 15).trigger('input');
+            return;
+        }
         $input.val(math.max(val - 1, 0)).trigger('input');
     })
 
@@ -441,6 +425,12 @@
     $('#dup_neg_y_axis').on('input', function(e){
         // console.log(e.target.value);
         g_dup_neg_y_axis = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+
+    $('#rotation').on('input', function(e){
+        // console.log(e.target.value);
+        g_rotaiton = parseInt(e.target.value);
         invalidateDrawings();
     });
 
