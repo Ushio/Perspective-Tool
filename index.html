@@ -1,0 +1,79 @@
+<script src="https://unpkg.com/konva@10/konva.min.js"></script>
+<div id='container'></div>
+
+<script>
+    let g_background_image = null;
+
+    const stage = new Konva.Stage({
+        container: 'container',
+        width: 500,
+        height: 400,
+    });
+
+    // Create a layer
+    const bglayer = new Konva.Layer();
+    stage.add(bglayer);
+
+    const cplayer = new Konva.Layer();
+    stage.add(cplayer);
+
+    const drawlayer = new Konva.Layer();
+    stage.add(drawlayer);
+    
+    const imageObj = new Image();
+    imageObj.onload = function () {
+        const background_image = new Konva.Image({image: imageObj});
+        bglayer.add(background_image);
+        stage.width(background_image.attrs.image.naturalWidth);
+        stage.height(background_image.attrs.image.naturalHeight);
+        
+        if(g_background_image != null)
+        {
+            bglayer.remove(g_background_image)
+        }
+        g_background_image = background_image;
+    };
+    imageObj.src = 'sample1.png';
+
+
+    function buildAnchor(x, y) {
+        const anchor = new Konva.Circle({
+            x: x,
+            y: y,
+            radius: 10,
+            stroke: "#010101",
+            fill: '#ddd',
+            strokeWidth: 2,
+            draggable: true,
+            opacity: 0.5
+        });
+        cplayer.add(anchor);
+
+        // Add hover styling
+        anchor.on('mouseover', function () {
+            document.body.style.cursor = 'grab';
+            this.strokeWidth(4);
+        });
+        
+        anchor.on('mouseout', function () {
+            document.body.style.cursor = 'default';
+            this.strokeWidth(2);
+        });
+
+        // Update curves when anchor is moved
+        anchor.on('dragmove', function () {
+            // updateDottedLines();
+            console.log(anchor);
+            anchor.attrs.x;
+            anchor.attrs.y;
+        });
+
+        return anchor;
+    }
+
+    buildAnchor(954, 480);
+    buildAnchor(750, 545);
+    buildAnchor(959, 627);
+    buildAnchor(1160, 541);
+
+</script>
