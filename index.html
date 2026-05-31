@@ -87,23 +87,6 @@
 <a href="https://github.com/Ushio/Perspective-Tool">Github Repo</a>
 
 <script>
-
-    const m = [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 3, 0], [0, 0, 0, 4]]
-
-    const X = math.lusolve(m, [-1, -1, -1, -1])        // x = [[-1], [-0.5], [-1/3], [-0.25]]
-
-    const f = math.lup(m)
-    const x1 = math.lusolve(f, [-1, -1, -1, -1])       // x1 = [[-1], [-0.5], [-1/3], [-0.25]]
-    const x2 = math.lusolve(f, [1, 2, 1, -1])          // x2 = [[1], [1], [1/3], [-0.25]]
-
-    const a = [[-2, 3], [2, 1]]
-    const b = [11, 9]
-    const XX = math.lusolve(a, b)  // [[2], [5]]
-
-     function lerp(a, b, t) {
-        return a + t * (b - a);
-    }
-
     function getPerspectiveTransform(src_xs, src_ys, dst_xs, dst_ys)
     {
         // Refs
@@ -182,6 +165,8 @@
     const imageObj = new Image();
     imageObj.onload = function () {
         const background_image = new Konva.Image({image: imageObj});
+        background_image.preventDefault(false);
+
         bglayer.add(background_image);
         stage.width(background_image.attrs.image.naturalWidth);
         stage.height(background_image.attrs.image.naturalHeight);
