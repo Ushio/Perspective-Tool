@@ -33,6 +33,30 @@
             </div>
         </div>
         </div>
+        
+        <div class="grid">
+        <div class="input-group input-number-group">
+            <h4 style="width: 100;">+Y</h4>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="dup_pos_y_axis" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+
+        <div class="input-group input-number-group">
+            <h4 style="width: 100;">-Y</h4>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="dup_neg_y_axis" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+        </div>
         <!-- <legend>複製</legend>
         <div class="grid">
         <div>        
@@ -120,6 +144,8 @@
     let g_perspective_matrix = null;
     let g_dup_pos_x_axis = 0;
     let g_dup_neg_x_axis = 0;
+    let g_dup_pos_y_axis = 0;
+    let g_dup_neg_y_axis = 0;
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -321,9 +347,11 @@
                 duplicates.push(polygon);
             }
         }
+        
         duplicate_square(g_dup_pos_x_axis, +1, 0);
         duplicate_square(g_dup_neg_x_axis, -1, 0);
-
+        duplicate_square(g_dup_pos_y_axis, 0, +1);
+        duplicate_square(g_dup_neg_y_axis, 0, -1);
         // for(let i = 1 ; i < g_dup_pos_x_axis + 1; i++)
         // {
         //     let points = [];
@@ -403,6 +431,16 @@
     $('#dup_neg_x_axis').on('input', function(e){
         // console.log(e.target.value);
         g_dup_neg_x_axis = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+    $('#dup_pos_y_axis').on('input', function(e){
+        // console.log(e.target.value);
+        g_dup_pos_y_axis = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+    $('#dup_neg_y_axis').on('input', function(e){
+        // console.log(e.target.value);
+        g_dup_neg_y_axis = parseInt(e.target.value);
         invalidateDrawings();
     });
 
