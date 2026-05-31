@@ -82,7 +82,12 @@
     </section>
 
     <button id="open_button">画像を開く(open)</button>
+    <label>
+    画像の透明度(image opacity)
+    <input id="image_opacity" type="range" value="100"/>
+    </label>
     <button id="save_button">セーブ(download)</button>
+
 </main>
 <a href="https://github.com/Ushio/Perspective-Tool">Github Repo</a>
 
@@ -166,6 +171,7 @@
     imageObj.onload = function () {
         const background_image = new Konva.Image({image: imageObj});
         background_image.preventDefault(false);
+        // background_image.opacity(0.5);
 
         bglayer.add(background_image);
         stage.width(background_image.attrs.image.naturalWidth);
@@ -466,6 +472,7 @@
                 imageObj.onload = function() {
                     const background_image = new Konva.Image({image: imageObj});
                     background_image.preventDefault(false);
+                    background_image.opacity(g_background_image.opacity());
                     bglayer.add(background_image);
                     stage.width(background_image.attrs.image.naturalWidth);
                     stage.height(background_image.attrs.image.naturalHeight);
@@ -500,6 +507,10 @@
         link.click();
         document.body.removeChild(link);
     });
+    $('#image_opacity').on('input', function(e){
+        g_background_image.opacity(parseInt(e.target.value) / 100.0);
+    });
+    
 
 </script>
 </body>
