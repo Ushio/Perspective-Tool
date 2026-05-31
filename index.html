@@ -71,6 +71,8 @@
         </div>
         </div>
     </section>
+
+    <button id="save_button">セーブ(download)</button>
 </main>
 
 <script>
@@ -242,7 +244,7 @@
         stroke: 'rgba(0, 0, 0)',
         strokeWidth: 2
     });
-    drawlayer.add(base_shape)
+    cplayer.add(base_shape)
 
     let guide_objects = [];
     let duplicates = [];
@@ -311,7 +313,7 @@
                 strokeWidth: 3
             });
 
-            drawlayer.add(arrow);
+            cplayer.add(arrow);
             guide_objects.push(arrow);
         }
         if(true)
@@ -329,7 +331,7 @@
                 strokeWidth: 3
             });
 
-            drawlayer.add(arrow);
+            cplayer.add(arrow);
             guide_objects.push(arrow);
         }
 
@@ -460,6 +462,26 @@
         // console.log(e.target.value);
         g_rotation = parseInt(e.target.value);
         invalidateDrawings();
+    });
+
+
+    $('#save_button').on('click', function(){
+        bglayer.visible(false);
+        cplayer.visible(false);
+        const dataURL = stage.toDataURL({
+            pixelRatio: 1
+        });
+
+        bglayer.visible(true);
+        cplayer.visible(true);
+        
+        // create link to download
+        const link = document.createElement('a');
+        link.download = 'guide.png';
+        link.href = dataURL;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     });
 
 </script>
