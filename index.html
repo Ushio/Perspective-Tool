@@ -68,7 +68,20 @@
         </div>
     </section>
     <section>
-        <legend>回転(rotation)</legend>
+        <legend>マージン(margin)</legend>
+        <div class="input-group input-number-group">
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="margin" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+        </div>
+    </section>
+    <section>
+        <legend>回転[正方形の場合](rotation, square case)</legend>
         <div class="input-group input-number-group">
             <div class="input-group-button">
                 <span class="input-number-decrement">-</span>
@@ -149,6 +162,7 @@
     let g_dup_neg_x_axis = 0;
     let g_dup_pos_y_axis = 0;
     let g_dup_neg_y_axis = 0;
+    let g_margin = 0;
     let g_rotation = 0;
 
     const stage = new Konva.Stage({
@@ -341,7 +355,7 @@
         }
         duplicates = [];
         
-        function duplicate_square(n, x_step, y_step, rotation)
+        function duplicate_square(n, x_step, y_step, rotation, margin)
         {
             for(let i = 0 ; i < n + 1; i++)
             {
@@ -349,8 +363,8 @@
                 let points_for_convex = [];
                 for(let j = 0 ; j < 4 ; j++)
                 {
-                    const src_x = src_xs[j] + i * 2.0 * x_step;
-                    const src_y = src_ys[j] + i * 2.0 * y_step;
+                    const src_x = src_xs[j] + i * 2.0 * x_step * (1.0 + margin);
+                    const src_y = src_ys[j] + i * 2.0 * y_step * (1.0 + margin);
 
                     const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
                     const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
@@ -400,10 +414,10 @@
             }
         }
 
-        duplicate_square(g_dup_pos_x_axis, +1, 0, g_rotation);
-        duplicate_square(g_dup_neg_x_axis, -1, 0, g_rotation);
-        duplicate_square(g_dup_pos_y_axis, 0, +1, g_rotation);
-        duplicate_square(g_dup_neg_y_axis, 0, -1, g_rotation);
+        duplicate_square(g_dup_pos_x_axis, +1, 0, g_rotation, g_margin / 100.0);
+        duplicate_square(g_dup_neg_x_axis, -1, 0, g_rotation, g_margin / 100.0);
+        duplicate_square(g_dup_pos_y_axis, 0, +1, g_rotation, g_margin / 100.0);
+        duplicate_square(g_dup_neg_y_axis, 0, -1, g_rotation, g_margin / 100.0);
 
         drawlayer.batchDraw();
     }
@@ -418,6 +432,10 @@
         {
             step = 15;
         }
+        else if($input.attr('id') == "margin")
+        {
+            step = 10;
+        }
 
         $input.val(val + step).trigger('input');
     });
@@ -429,6 +447,11 @@
         if($input.attr('id') == "rotation")
         {
             $input.val(val - 15).trigger('input');
+            return;
+        }
+        if($input.attr('id') == "margin")
+        {
+            $input.val(val - 10).trigger('input');
             return;
         }
         $input.val(math.max(val - 1, 0)).trigger('input');
@@ -459,6 +482,11 @@
     $('#rotation').on('input', function(e){
         // console.log(e.target.value);
         g_rotation = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+    $('#margin').on('input', function(e){
+        // console.log(e.target.value);
+        g_margin = parseInt(e.target.value);
         invalidateDrawings();
     });
 
