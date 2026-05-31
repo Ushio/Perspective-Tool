@@ -13,12 +13,12 @@
     // Create a layer
     const bglayer = new Konva.Layer();
     stage.add(bglayer);
+    
+    const drawlayer = new Konva.Layer();
+    stage.add(drawlayer);
 
     const cplayer = new Konva.Layer();
     stage.add(cplayer);
-
-    const drawlayer = new Konva.Layer();
-    stage.add(drawlayer);
     
     const imageObj = new Image();
     imageObj.onload = function () {
@@ -29,7 +29,7 @@
         
         if(g_background_image != null)
         {
-            bglayer.remove(g_background_image)
+            bglayer.remove(g_background_image);
         }
         g_background_image = background_image;
     };
@@ -66,14 +66,41 @@
             console.log(anchor);
             anchor.attrs.x;
             anchor.attrs.y;
+
+            invalidateDrawings();
         });
 
         return anchor;
     }
 
-    buildAnchor(954, 480);
-    buildAnchor(750, 545);
-    buildAnchor(959, 627);
-    buildAnchor(1160, 541);
+    let anchors = [
+        buildAnchor(954, 480),
+        buildAnchor(750, 545),
+        buildAnchor(959, 627),
+        buildAnchor(1160, 541),
+    ]
+
+    const drawings = new Konva.Shape({
+        sceneFunc: function (context, shape) {
+            context.beginPath();
+            context.moveTo(anchors[0].attrs.x, anchors[0].attrs.y);
+            for (let i = 1; i < anchors.length; i++) {
+                context.lineTo(anchors[i].attrs.x, anchors[i].attrs.y);
+            } 
+            context.closePath();
+            context.fillStrokeShape(shape);
+
+            
+        },
+        fill: 'rgba(255, 128, 128, 0.5)',
+        stroke: 'rgba(0, 0, 0)',
+        strokeWidth: 4
+    });
+    drawlayer.add(drawings)
+
+    function invalidateDrawings()
+    {
+        drawlayer.batchDraw();
+    }
 
 </script>
