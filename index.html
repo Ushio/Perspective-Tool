@@ -148,7 +148,7 @@
     let g_dup_neg_x_axis = 0;
     let g_dup_pos_y_axis = 0;
     let g_dup_neg_y_axis = 0;
-    let g_rotaiton = 0;
+    let g_rotation = 0;
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -178,6 +178,8 @@
         //     bglayer.remove(g_background_image);
         // }
         g_background_image = background_image;
+
+        invalidateDrawings();
     };
     imageObj.src = 'sample1.png';
 
@@ -242,7 +244,7 @@
     });
     drawlayer.add(base_shape)
 
-    let dots = [];
+    let guide_objects = [];
     let duplicates = [];
 
     function invalidateDrawings()
@@ -260,18 +262,17 @@
         
         // for(let i = 0 ; i < 4 ; i++)
         // {
-        //     rotated = math.rotate([src_xs[i], src_ys[i]], g_rotaiton / 360.0 * math.pi * 2.0);
+        //     rotated = math.rotate([src_xs[i], src_ys[i]], g_rotation / 360.0 * math.pi * 2.0);
         //     src_xs[i] = rotated[0];
         //     src_ys[i] = rotated[1];
         // }
 
 
-        // drawlayer.remove(dots);
-        // for(let i = 0 ; i < dots.length ; i++)
-        // {
-        //     dots[i].remove();
-        // }
-        // dots = [];
+        for(let i = 0 ; i < guide_objects.length ; i++)
+        {
+            guide_objects[i].remove();
+        }
+        guide_objects = [];
 
         // const N = 10;
         // for (let y = 0; y < N; y++)
@@ -293,6 +294,44 @@
         //         dots.push(circle);
         //     }
         // }
+
+        // Arrows
+        if(true)
+        {
+            const center_xy = getPerspectivePoint(g_perspective_matrix, 0, 0);
+            const rotated_to = math.rotate([1.0, 0.0], g_rotation / 360.0 * math.pi * 2.0);
+            const p_xy = getPerspectivePoint(g_perspective_matrix, rotated_to[0], rotated_to[1]);
+            const arrow = new Konva.Arrow({
+                x: center_xy[0],
+                y: center_xy[1],
+                points: [0, 0, p_xy[0] - center_xy[0], p_xy[1] - center_xy[1]],
+                pointerLength: 20,
+                pointerWidth: 20,
+                stroke: 'red',
+                strokeWidth: 3
+            });
+
+            drawlayer.add(arrow);
+            guide_objects.push(arrow);
+        }
+        if(true)
+        {
+            const center_xy = getPerspectivePoint(g_perspective_matrix, 0, 0);
+            const rotated_to = math.rotate([0.0, 1.0], g_rotation / 360.0 * math.pi * 2.0);
+            const p_xy = getPerspectivePoint(g_perspective_matrix, rotated_to[0], rotated_to[1]);
+            const arrow = new Konva.Arrow({
+                x: center_xy[0],
+                y: center_xy[1],
+                points: [0, 0, p_xy[0] - center_xy[0], p_xy[1] - center_xy[1]],
+                pointerLength: 20,
+                pointerWidth: 20,
+                stroke: 'green',
+                strokeWidth: 3
+            });
+
+            drawlayer.add(arrow);
+            guide_objects.push(arrow);
+        }
 
 
         // Duplication
@@ -361,10 +400,10 @@
             }
         }
 
-        duplicate_square(g_dup_pos_x_axis, +1, 0, g_rotaiton);
-        duplicate_square(g_dup_neg_x_axis, -1, 0, g_rotaiton);
-        duplicate_square(g_dup_pos_y_axis, 0, +1, g_rotaiton);
-        duplicate_square(g_dup_neg_y_axis, 0, -1, g_rotaiton);
+        duplicate_square(g_dup_pos_x_axis, +1, 0, g_rotation);
+        duplicate_square(g_dup_neg_x_axis, -1, 0, g_rotation);
+        duplicate_square(g_dup_pos_y_axis, 0, +1, g_rotation);
+        duplicate_square(g_dup_neg_y_axis, 0, -1, g_rotation);
 
         drawlayer.batchDraw();
     }
@@ -419,7 +458,7 @@
 
     $('#rotation').on('input', function(e){
         // console.log(e.target.value);
-        g_rotaiton = parseInt(e.target.value);
+        g_rotation = parseInt(e.target.value);
         invalidateDrawings();
     });
 
