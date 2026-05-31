@@ -1,12 +1,39 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="konva.js"></script>
 <script src="math.min.js"></script>
 <link rel="stylesheet" href="pico.min.css">
+<link rel="stylesheet" href="number_input.css">
 
 <div id='container'></div>
 
 <main class="container">
     <section>
-        <legend>複製</legend>
+        <!-- https://get.foundation/building-blocks/blocks/input-number-group.html -->
+
+        <div class="grid">
+        <div class="input-group input-number-group">
+            <h4 style="width: 100;">+X</h4>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="dup_pos_x_axis" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+
+        <div class="input-group input-number-group">
+            <h4 style="width: 100;">-X</h4>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="dup_neg_x_axis" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+        </div>
+        <!-- <legend>複製</legend>
         <div class="grid">
         <div>        
             <label for="dup_pos_x_axis">+X</label>
@@ -16,11 +43,12 @@
             <label for="dup_neg_x_axis">-X</label>
             <input id="dup_neg_x_axis" min=0 type="number" name="number" value=0>
         </div>
-        </div>
+        </div> -->
     </section>
 </main>
 
 <script>
+
     const m = [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 3, 0], [0, 0, 0, 4]]
 
     const X = math.lusolve(m, [-1, -1, -1, -1])        // x = [[-1], [-0.5], [-1/3], [-0.25]]
@@ -236,75 +264,146 @@
             duplicates[i].remove();
         }
         duplicates = [];
-
-        for(let i = 1 ; i < g_dup_pos_x_axis + 1; i++)
+        
+        function duplicate_square(n, x_step, y_step)
         {
-            let points = [];
-            let points_for_convex = [];
-            for(let j = 0 ; j < 4 ; j++)
+            for(let i = 1 ; i < n + 1; i++)
             {
-                const src_x = src_xs[j] + i * 2.0;
-                const src_y = src_ys[j];
-                const p_xy = getPerspectivePoint(g_perspective_matrix, src_x, src_y);
+                let points = [];
+                let points_for_convex = [];
+                for(let j = 0 ; j < 4 ; j++)
+                {
+                    const src_x = src_xs[j] + i * 2.0 * x_step;
+                    const src_y = src_ys[j] + i * 2.0 * y_step;
+                    const p_xy = getPerspectivePoint(g_perspective_matrix, src_x, src_y);
 
-                points.push(p_xy[0]);
-                points.push(p_xy[1]);
-                points_for_convex.push([p_xy[0], p_xy[1]]);
-            }
-
-            const isConvex = (arr = []) => {
-                const { length } = arr;
-                let pre = 0, curr = 0;
-                
-                for (let i = 0; i < length; ++i) {
-                    // Calculate edge vectors
-                    let dx1 = arr[(i + 1) % length][0] - arr[i][0];
-                    let dx2 = arr[(i + 2) % length][0] - arr[(i + 1) % length][0];
-                    let dy1 = arr[(i + 1) % length][1] - arr[i][1];
-                    let dy2 = arr[(i + 2) % length][1] - arr[(i + 1) % length][1];
-                    
-                    // Calculate cross product
-                    curr = dx1 * dy2 - dx2 * dy1;
-                    
-                    if (curr != 0) {
-                        // Check if signs are different
-                        if ((curr > 0 && pre < 0) || (curr < 0 && pre > 0))
-                            return false;
-                        else
-                            pre = curr;
-                    }
+                    points.push(p_xy[0]);
+                    points.push(p_xy[1]);
+                    points_for_convex.push([p_xy[0], p_xy[1]]);
                 }
-                return true;
-            };
-            if (isConvex(points_for_convex) == false)
-            {
-                break;
-            }
 
-            const polygon = new Konva.Line({
-                points: points,
-                stroke: 'black',
-                strokeWidth: 1,
-                closed: true
-            });
-            drawlayer.add(polygon);
-            duplicates.push(polygon);
+                const isConvex = (arr = []) => {
+                    const { length } = arr;
+                    let pre = 0, curr = 0;
+                    
+                    for (let i = 0; i < length; ++i) {
+                        // Calculate edge vectors
+                        let dx1 = arr[(i + 1) % length][0] - arr[i][0];
+                        let dx2 = arr[(i + 2) % length][0] - arr[(i + 1) % length][0];
+                        let dy1 = arr[(i + 1) % length][1] - arr[i][1];
+                        let dy2 = arr[(i + 2) % length][1] - arr[(i + 1) % length][1];
+                        
+                        // Calculate cross product
+                        curr = dx1 * dy2 - dx2 * dy1;
+                        
+                        if (curr != 0) {
+                            // Check if signs are different
+                            if ((curr > 0 && pre < 0) || (curr < 0 && pre > 0))
+                                return false;
+                            else
+                                pre = curr;
+                        }
+                    }
+                    return true;
+                };
+                if (isConvex(points_for_convex) == false)
+                {
+                    break;
+                }
+
+                const polygon = new Konva.Line({
+                    points: points,
+                    stroke: 'black',
+                    strokeWidth: 1,
+                    closed: true
+                });
+                drawlayer.add(polygon);
+                duplicates.push(polygon);
+            }
         }
+        duplicate_square(g_dup_pos_x_axis, +1, 0);
+        duplicate_square(g_dup_neg_x_axis, -1, 0);
+
+        // for(let i = 1 ; i < g_dup_pos_x_axis + 1; i++)
+        // {
+        //     let points = [];
+        //     let points_for_convex = [];
+        //     for(let j = 0 ; j < 4 ; j++)
+        //     {
+        //         const src_x = src_xs[j] + i * 2.0;
+        //         const src_y = src_ys[j];
+        //         const p_xy = getPerspectivePoint(g_perspective_matrix, src_x, src_y);
+
+        //         points.push(p_xy[0]);
+        //         points.push(p_xy[1]);
+        //         points_for_convex.push([p_xy[0], p_xy[1]]);
+        //     }
+
+        //     const isConvex = (arr = []) => {
+        //         const { length } = arr;
+        //         let pre = 0, curr = 0;
+                
+        //         for (let i = 0; i < length; ++i) {
+        //             // Calculate edge vectors
+        //             let dx1 = arr[(i + 1) % length][0] - arr[i][0];
+        //             let dx2 = arr[(i + 2) % length][0] - arr[(i + 1) % length][0];
+        //             let dy1 = arr[(i + 1) % length][1] - arr[i][1];
+        //             let dy2 = arr[(i + 2) % length][1] - arr[(i + 1) % length][1];
+                    
+        //             // Calculate cross product
+        //             curr = dx1 * dy2 - dx2 * dy1;
+                    
+        //             if (curr != 0) {
+        //                 // Check if signs are different
+        //                 if ((curr > 0 && pre < 0) || (curr < 0 && pre > 0))
+        //                     return false;
+        //                 else
+        //                     pre = curr;
+        //             }
+        //         }
+        //         return true;
+        //     };
+        //     if (isConvex(points_for_convex) == false)
+        //     {
+        //         break;
+        //     }
+
+        //     const polygon = new Konva.Line({
+        //         points: points,
+        //         stroke: 'black',
+        //         strokeWidth: 1,
+        //         closed: true
+        //     });
+        //     drawlayer.add(polygon);
+        //     duplicates.push(polygon);
+        // }
 
         drawlayer.batchDraw();
     }
 
     // UI
-    document.getElementById('dup_pos_x_axis').addEventListener('input', function(e){
+    $('.input-number-increment').click(function() {
+        let $input = $(this).parents('.input-number-group').find('.input-number');
+        let val = parseInt($input.val(), 10);
+        $input.val(val + 1).trigger('input');
+    });
+
+    $('.input-number-decrement').click(function() {
+        let $input = $(this).parents('.input-number-group').find('.input-number');
+        let val = parseInt($input.val(), 10);
+        $input.val(math.max(val - 1, 0)).trigger('input');
+    })
+
+    // UI
+    $('#dup_pos_x_axis').on('input', function(e){
         // console.log(e.target.value);
         g_dup_pos_x_axis = parseInt(e.target.value);
         invalidateDrawings();
     });
-    document.getElementById('dup_neg_x_axis').addEventListener('input', function(e){
+    $('#dup_neg_x_axis').on('input', function(e){
         // console.log(e.target.value);
         g_dup_neg_x_axis = parseInt(e.target.value);
         invalidateDrawings();
     });
-    
 
 </script>
