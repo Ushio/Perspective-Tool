@@ -1,8 +1,70 @@
-<script src="https://unpkg.com/konva@10/konva.min.js"></script>
+<script src="konva.js"></script>
+<script src="math.min.js"></script>
 <div id='container'></div>
 
 <script>
+    const m = [[1, 0, 0, 0], [0, 2, 0, 0], [0, 0, 3, 0], [0, 0, 0, 4]]
+
+    const X = math.lusolve(m, [-1, -1, -1, -1])        // x = [[-1], [-0.5], [-1/3], [-0.25]]
+
+    const f = math.lup(m)
+    const x1 = math.lusolve(f, [-1, -1, -1, -1])       // x1 = [[-1], [-0.5], [-1/3], [-0.25]]
+    const x2 = math.lusolve(f, [1, 2, 1, -1])          // x2 = [[1], [1], [1/3], [-0.25]]
+
+    const a = [[-2, 3], [2, 1]]
+    const b = [11, 9]
+    const XX = math.lusolve(a, b)  // [[2], [5]]
+
+     function lerp(a, b, t) {
+        return a + t * (b - a);
+    }
+
+    function getPerspectiveTransform(src_xs, src_ys, dst_xs, dst_ys)
+    {
+        // Refs
+        // https://github.com/Ushio/getPerspectiveTransform
+        // https://mathjs.org/docs/reference/functions/lusolve.html
+        
+        let A = math.zeros([8, 8]);
+        let b = math.zeros([8]);
+        for (let i = 0; i < 4; i++)
+        {
+            const even = i * 2;
+            const odd = i * 2 + 1;
+
+            A[even][0] = src_xs[i];
+            A[even][1] = src_ys[i];
+            A[even][2] = 1;
+            A[even][3] = 0;
+            A[even][4] = 0;
+            A[even][5] = 0;
+            A[even][6] = -dst_xs[i] * src_xs[i];
+            A[even][7] = -dst_xs[i] * src_ys[i];
+
+            A[odd][0] = 0;
+            A[odd][1] = 0;
+            A[odd][2] = 0;
+            A[odd][3] = src_xs[i];
+            A[odd][4] = src_ys[i];
+            A[odd][5] = 1;
+            A[odd][6] = -dst_ys[i] * src_xs[i];
+            A[odd][7] = -dst_ys[i] * src_ys[i];
+
+            b[even] = dst_xs[i];
+            b[odd] = dst_ys[i];
+        }
+
+        const xs = math.lusolve(A, b);
+        return math.matrix([
+            [xs[0][0], xs[1][0], xs[2][0]],
+            [xs[3][0], xs[4][0], xs[5][0]],
+            [xs[6][0], xs[7][0], 1.0]
+        ]);
+    }
+
+
     let g_background_image = null;
+    let g_perspective_matrix = null;
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -27,10 +89,10 @@
         stage.width(background_image.attrs.image.naturalWidth);
         stage.height(background_image.attrs.image.naturalHeight);
         
-        if(g_background_image != null)
-        {
-            bglayer.remove(g_background_image);
-        }
+        // if(g_background_image != null)
+        // {
+        //     bglayer.remove(g_background_image);
+        // }
         g_background_image = background_image;
     };
     imageObj.src = 'sample1.png';
@@ -80,7 +142,7 @@
         buildAnchor(1160, 541),
     ]
 
-    const drawings = new Konva.Shape({
+    const base_shape = new Konva.Shape({
         sceneFunc: function (context, shape) {
             context.beginPath();
             context.moveTo(anchors[0].attrs.x, anchors[0].attrs.y);
@@ -89,17 +151,59 @@
             } 
             context.closePath();
             context.fillStrokeShape(shape);
-
-            
         },
         fill: 'rgba(255, 128, 128, 0.5)',
         stroke: 'rgba(0, 0, 0)',
         strokeWidth: 4
     });
-    drawlayer.add(drawings)
+    drawlayer.add(base_shape)
+
+    let dots = []
 
     function invalidateDrawings()
     {
+        const src_xs = [ -1, +1, +1, -1 ];
+        const src_ys = [ -1, -1, +1, +1 ];
+        let dst_xs = math.zeros([4]);
+        let dst_ys = math.zeros([4]);
+        for (let i = 0; i < 4; i++)
+        {
+            dst_xs[i] = anchors[i].attrs.x;
+            dst_ys[i] = anchors[i].attrs.y;
+        }
+        g_perspective_matrix = getPerspectiveTransform(src_xs, src_ys, dst_xs, dst_ys);
+        
+        // drawlayer.remove(dots);
+        for(let i = 0 ; i < dots.length ; i++)
+        {
+            dots[i].remove();
+        }
+        dots = [];
+
+        const N = 10;
+        for (let y = 0; y < N; y++)
+        {
+            for (let x = 0; x < N; x++)
+            {
+                const src_x = lerp(-1.0, +1.0, x / (N - 1));
+                const src_y = lerp(-1.0, +1.0, y / (N - 1));
+                
+                const projected = math.multiply(g_perspective_matrix, [src_x, src_y, 1.0]);
+                const p_x = projected.get([0]) / projected.get([2]);
+                const p_y = projected.get([1]) / projected.get([2]);
+                const circle = new Konva.Circle({
+                    x: p_x,
+                    y: p_y,
+                    radius: 3,
+                    fill: 'black'
+                });
+
+                drawlayer.add(circle);
+                dots.push(circle);
+            }
+        }
+
+
         drawlayer.batchDraw();
     }
 
