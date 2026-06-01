@@ -40,15 +40,27 @@
         <input id="white_line" name="terms" type="checkbox" role="switch" />
         白線(white line)
         </label>
+    </section>
+    <hr>
+    <section>
         <label>
         <input id="ellipse_guide" name="terms" type="checkbox" role="switch" />
         楕円ガイド(ellipse guide)
         </label>
-        <label>
-        <input id="quater_ellipse_guide" name="terms" type="checkbox" role="switch" />
-        1/4 楕円ガイド(quater ellipse guide)
-        </label>
-
+            <label>
+            <input id="quater_ellipse_guide" name="terms" type="checkbox" role="switch" />
+            1/4 楕円ガイド(quater ellipse guide)
+            </label>
+        <select id="quater_ellipse_dir" style="margin-left: 60px; width: 400px;" name="" >
+        <option selected disabled value="">
+            原点(origin)
+        </option>
+        <option value="A" selected>ガイド原点 A</option>
+        <option value="B">ガイド原点 B</option>
+        <option value="C">ガイド原点 C</option>
+        <option value="D">ガイド原点 D</option>
+        </select>
+        <br>
         <div class="input-group input-number-group">
             <div>楕円ガイド ケーキ分割(ellipse cake split)</div>
             <div style="width: 10px;"></div>
@@ -61,6 +73,7 @@
             </div>
         </div>
     </section>
+    <hr>
     <section>
         <div>エッジオフセット(edge offset)</div>
         <div class="grid">
@@ -240,6 +253,7 @@
     let g_white_line = false;
     let g_ellipse_guide = false;
     let g_quater_ellipse_guide = false;
+    let g_quater_ellipse_dir = "A";
     let g_cake_split = 0;
 
     const stage = new Konva.Stage({
@@ -582,13 +596,50 @@
                         });
                         drawlayer.add(ellipse);
                         draw_objects.push(ellipse);
+
+                        const center_src_x = (offset_x) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
+                        const center_src_y = (offset_y) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
+                        const p_center_xy = getPerspectivePoint(g_perspective_matrix, center_src_x, center_src_y);
+                        for(let j = 0 ; j < g_cake_split ; j++ )
+                        {
+                            const theta = (j + 1) / (g_cake_split + 1) * math.pi * 0.5 + base_theta;
+                            const src_x = (offset_x + math.sin(theta) * 2.0) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
+                            const src_y = (offset_y + math.cos(theta) * 2.0) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
+        
+                            const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
+                            const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
+                            if(p_xy[2] < 0.0)
+                            {
+                                continue;
+                            }
+                            const split = new Konva.Line({
+                                points: [p_center_xy[0], p_center_xy[1], p_xy[0], p_xy[1]],
+                                stroke: stroke_color,
+                                strokeWidth: g_thickness,
+                                closed: false
+                            });
+                            drawlayer.add(split);
+                            draw_objects.push(split);
+                        }
                     }
                 }
 
-                quater_ellipse(-1, -1, 0);
-                quater_ellipse(+1, -1, -math.pi * 0.5);
-                quater_ellipse(+1, +1, -math.pi);
-                quater_ellipse(-1, +1, -math.pi * 1.5);
+                if(g_quater_ellipse_dir == "A")
+                {
+                    quater_ellipse(-1, -1, 0);
+                }
+                else if(g_quater_ellipse_dir == "B")
+                {
+                    quater_ellipse(+1, -1, -math.pi * 0.5);
+                }
+                else if(g_quater_ellipse_dir == "C")
+                {
+                    quater_ellipse(+1, +1, -math.pi);
+                }
+                else if(g_quater_ellipse_dir == "D")
+                {
+                    quater_ellipse(-1, +1, -math.pi * 1.5);
+                }
             }
         }
 
@@ -749,6 +800,11 @@
     });
     $('#quater_ellipse_guide').on('input', function(e){
         g_quater_ellipse_guide = $(this).is(':checked');
+        invalidateDrawings();
+    });
+
+    $('#quater_ellipse_dir').on('change', function() {
+        g_quater_ellipse_dir = this.value;
         invalidateDrawings();
     });
 </script>
