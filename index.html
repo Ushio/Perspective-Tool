@@ -17,6 +17,13 @@
 
 <main class="container">
     <section>
+        <label>
+        <input id="ellipse_guide" name="terms" type="checkbox" role="switch" />
+        楕円ガイド(ellipse guide)
+        </label>
+        <label>
+    </section>
+    <section>
         <!-- https://get.foundation/building-blocks/blocks/input-number-group.html -->
         <legend>複製(duplication)</legend>
         <div class="grid">
@@ -165,6 +172,7 @@
     let g_dup_neg_y_axis = 0;
     let g_margin = 0;
     let g_rotation = 0;
+    let g_ellipse_guide = false;
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -261,7 +269,7 @@
     base_shape.zIndex(1);
 
     let guide_objects = [];
-    let duplicates = [];
+    let draw_objects = [];
 
     function invalidateDrawings()
     {
@@ -351,15 +359,16 @@
 
 
         // Duplication
-        for(let i = 0 ; i < duplicates.length ; i++)
+        for(let i = 0 ; i < draw_objects.length ; i++)
         {
-            duplicates[i].remove();
+            draw_objects[i].remove();
         }
-        duplicates = [];
+        draw_objects = [];
         
-        function duplicate_square(n, x_step, y_step, rotation, margin)
+        function duplicate(beg, n, x_step, y_step, rotation, margin)
         {
-            for(let i = 0 ; i < n + 1; i++)
+            // square
+            for(let i = beg ; i < n + 1; i++)
             {
                 let points = [];
                 let has_bad_vertex = false;
@@ -391,14 +400,55 @@
                     closed: true
                 });
                 drawlayer.add(polygon);
-                duplicates.push(polygon);
+                draw_objects.push(polygon);
+            }
+            
+            // ellipse
+            if(g_ellipse_guide)
+            {
+                let n_verts = 64;
+                for(let i = beg ; i < n + 1; i++)
+                {
+                    let points = [];
+                    let has_bad_vertex = false;
+                    for(let j = 0 ; j < n_verts ; j++)
+                    {
+                        const theta = j / n_verts * math.pi * 2.0;
+                        const src_x = math.sin(theta) + i * 2.0 * x_step * (1.0 + margin);
+                        const src_y = math.cos(theta) + i * 2.0 * y_step * (1.0 + margin);
+    
+                        const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
+                        const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
+                        if(p_xy[2] < 0.0)
+                        {
+                            has_bad_vertex = true;
+                        }
+    
+                        points.push(p_xy[0]);
+                        points.push(p_xy[1]);
+                    }
+    
+                    if(has_bad_vertex)
+                    {
+                        break;
+                    }
+    
+                    const ellipse = new Konva.Line({
+                        points: points,
+                        stroke: 'black',
+                        strokeWidth: 1,
+                        closed: true
+                    });
+                    drawlayer.add(ellipse);
+                    draw_objects.push(ellipse);
+                }
             }
         }
 
-        duplicate_square(g_dup_pos_x_axis, +1, 0, g_rotation, g_margin / 100.0);
-        duplicate_square(g_dup_neg_x_axis, -1, 0, g_rotation, g_margin / 100.0);
-        duplicate_square(g_dup_pos_y_axis, 0, +1, g_rotation, g_margin / 100.0);
-        duplicate_square(g_dup_neg_y_axis, 0, -1, g_rotation, g_margin / 100.0);
+        duplicate(0, g_dup_pos_x_axis, +1, 0, g_rotation, g_margin / 100.0);
+        duplicate(1, g_dup_neg_x_axis, -1, 0, g_rotation, g_margin / 100.0);
+        duplicate(1, g_dup_pos_y_axis, 0, +1, g_rotation, g_margin / 100.0);
+        duplicate(1, g_dup_neg_y_axis, 0, -1, g_rotation, g_margin / 100.0);
 
         drawlayer.batchDraw();
     }
@@ -519,7 +569,10 @@
     $('#image_opacity').on('input', function(e){
         g_background_image.opacity(parseInt(e.target.value) / 100.0);
     });
-    
+    $('#ellipse_guide').on('input', function(e){
+        g_ellipse_guide = $(this).is(':checked');
+        invalidateDrawings();
+    });
 
 </script>
 </body>
