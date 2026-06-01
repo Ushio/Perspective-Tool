@@ -16,6 +16,12 @@
 <div id='container'></div>
 
 <main class="container">
+    <button id="open_button">画像を開く(open)</button>
+    <label>
+    画像の透明度(image opacity)
+    <input id="image_opacity" type="range" value="100"/>
+    </label>
+    <hr>
     <section>
         <div class="input-group input-number-group">
             <div>線の太さ(line thickness)</div>
@@ -43,6 +49,7 @@
         1/4 楕円ガイド(quater ellipse guide)
         </label>
     </section>
+    <hr>
     <section>
         <!-- https://get.foundation/building-blocks/blocks/input-number-group.html -->
         <div>複製(duplication)</div>
@@ -121,12 +128,6 @@
             </div>
         </div>
     </section>
-
-    <button id="open_button">画像を開く(open)</button>
-    <label>
-    画像の透明度(image opacity)
-    <input id="image_opacity" type="range" value="100"/>
-    </label>
     <button id="save_button">セーブ(download)</button>
 
 </main>
