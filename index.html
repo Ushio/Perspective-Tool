@@ -49,6 +49,34 @@
         1/4 楕円ガイド(quater ellipse guide)
         </label>
     </section>
+    <section>
+        <div>エッジオフセット(edge offset)</div>
+        <div class="grid">
+        <div class="input-group input-number-group">
+            <h4>X</h4>
+            <div style="width: 10px;"></div>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="edge_offset_x" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+
+        <div class="input-group input-number-group">
+            <h4>Y</h4>
+            <div style="width: 10px;"></div>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="edge_offset_y" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+        </div>
+    </section>
     <hr>
     <section>
         <!-- https://get.foundation/building-blocks/blocks/input-number-group.html -->
@@ -105,7 +133,7 @@
         </div>
     </section>
     <section>
-        <div>マージン(margin)</div>
+        <div>複製マージン(duplication margin)</div>
         <div class="input-group input-number-group">
             <div class="input-group-button">
                 <span class="input-number-decrement">-</span>
@@ -193,6 +221,8 @@
     let g_dup_neg_x_axis = 0;
     let g_dup_pos_y_axis = 0;
     let g_dup_neg_y_axis = 0;
+    let g_edge_offset_x = 0;
+    let g_edge_offset_y = 0;
     let g_margin = 0;
     let g_rotation = 0;
     let g_white_line = false;
@@ -390,7 +420,7 @@
         }
         draw_objects = [];
         
-        function duplicate(beg, n, x_step, y_step, rotation, margin)
+        function duplicate(beg, n, x_step, y_step, rotation, margin, edge_offset_x, edge_offset_y)
         {
             const stroke_color = g_white_line ? "white" : "black";
 
@@ -401,8 +431,8 @@
                 let has_bad_vertex = false;
                 for(let j = 0 ; j < 4 ; j++)
                 {
-                    const src_x = src_xs[j] + i * 2.0 * x_step * (1.0 + margin);
-                    const src_y = src_ys[j] + i * 2.0 * y_step * (1.0 + margin);
+                    const src_x = src_xs[j] * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
+                    const src_y = src_ys[j] * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
 
                     const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
                     const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
@@ -441,8 +471,8 @@
                     for(let j = 0 ; j < n_verts ; j++)
                     {
                         const theta = j / n_verts * math.pi * 2.0;
-                        const src_x = math.sin(theta) + i * 2.0 * x_step * (1.0 + margin);
-                        const src_y = math.cos(theta) + i * 2.0 * y_step * (1.0 + margin);
+                        const src_x = math.sin(theta) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
+                        const src_y = math.cos(theta) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
     
                         const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
                         const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
@@ -482,8 +512,8 @@
                         for(let j = 0 ; j < n_verts ; j++)
                         {
                             const theta = j / n_verts * math.pi * 0.5 + base_theta;
-                            const src_x = offset_x + math.sin(theta) * 2.0 + i * 2.0 * x_step * (1.0 + margin);
-                            const src_y = offset_y + math.cos(theta) * 2.0 + i * 2.0 * y_step * (1.0 + margin);
+                            const src_x = (offset_x + math.sin(theta) * 2.0) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
+                            const src_y = (offset_y + math.cos(theta) * 2.0) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
         
                             const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
                             const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
@@ -519,10 +549,10 @@
             }
         }
 
-        duplicate(0, g_dup_pos_x_axis, +1, 0, g_rotation, g_margin / 100.0);
-        duplicate(1, g_dup_neg_x_axis, -1, 0, g_rotation, g_margin / 100.0);
-        duplicate(1, g_dup_pos_y_axis, 0, +1, g_rotation, g_margin / 100.0);
-        duplicate(1, g_dup_neg_y_axis, 0, -1, g_rotation, g_margin / 100.0);
+        duplicate(0, g_dup_pos_x_axis, +1, 0, g_rotation, g_margin / 100.0, g_edge_offset_x / 100.0, g_edge_offset_y / 100.0);
+        duplicate(1, g_dup_neg_x_axis, -1, 0, g_rotation, g_margin / 100.0, g_edge_offset_x / 100.0, g_edge_offset_y / 100.0);
+        duplicate(1, g_dup_pos_y_axis, 0, +1, g_rotation, g_margin / 100.0, g_edge_offset_x / 100.0, g_edge_offset_y / 100.0);
+        duplicate(1, g_dup_neg_y_axis, 0, -1, g_rotation, g_margin / 100.0, g_edge_offset_x / 100.0, g_edge_offset_y / 100.0);
 
         drawlayer.batchDraw();
     }
@@ -537,7 +567,7 @@
         {
             step = 15;
         }
-        else if($input.attr('id') == "margin")
+        else if($input.attr('id') == "margin" || $input.attr('id') == "edge_offset_x" || $input.attr('id') == "edge_offset_y")
         {
             step = 10;
         }
@@ -554,7 +584,7 @@
             $input.val(val - 15).trigger('input');
             return;
         }
-        if($input.attr('id') == "margin")
+        if($input.attr('id') == "margin" || $input.attr('id') == "edge_offset_x" || $input.attr('id') == "edge_offset_y")
         {
             $input.val(val - 10).trigger('input');
             return;
@@ -598,6 +628,17 @@
     $('#margin').on('input', function(e){
         // console.log(e.target.value);
         g_margin = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+
+    $('#edge_offset_x').on('input', function(e){
+        // console.log(e.target.value);
+        g_edge_offset_x = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+    $('#edge_offset_y').on('input', function(e){
+        // console.log(e.target.value);
+        g_edge_offset_y = parseInt(e.target.value);
         invalidateDrawings();
     });
 
