@@ -48,6 +48,18 @@
         <input id="quater_ellipse_guide" name="terms" type="checkbox" role="switch" />
         1/4 楕円ガイド(quater ellipse guide)
         </label>
+
+        <div class="input-group input-number-group">
+            <div>楕円ガイド ケーキ分割(ellipse cake split)</div>
+            <div style="width: 10px;"></div>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="cake_split" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
     </section>
     <section>
         <div>エッジオフセット(edge offset)</div>
@@ -228,6 +240,7 @@
     let g_white_line = false;
     let g_ellipse_guide = false;
     let g_quater_ellipse_guide = false;
+    let g_cake_split = 0;
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -317,7 +330,7 @@
             context.closePath();
             context.fillStrokeShape(shape);
         },
-        fill: 'rgba(255, 128, 128, 0.5)',
+        fill: 'rgba(255, 128, 128, 0.33)',
     });
     base_shape.lineCap('round');
     cplayer.add(base_shape)
@@ -498,6 +511,36 @@
                     });
                     drawlayer.add(ellipse);
                     draw_objects.push(ellipse);
+
+
+                    if( 0 < g_cake_split )
+                    {
+                        const center_src_x = i * 2.0 * x_step * (1.0 + margin);
+                        const center_src_y = i * 2.0 * y_step * (1.0 + margin);
+                        const p_center_xy = getPerspectivePoint(g_perspective_matrix, center_src_x, center_src_y);
+    
+                        for(let j = 0 ; j < g_cake_split + 1 ; j++ )
+                        {
+                            const theta = j / g_cake_split * math.pi * 2.0 + math.pi * 0.25;
+                            const src_x = math.sin(theta) * (1.0 + edge_offset_x) + center_src_x;
+                            const src_y = math.cos(theta) * (1.0 + edge_offset_y) + center_src_y;
+        
+                            const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
+                            const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
+                            if(p_xy[2] < 0.0)
+                            {
+                                continue;
+                            }
+                            const split = new Konva.Line({
+                                points: [p_center_xy[0], p_center_xy[1], p_xy[0], p_xy[1]],
+                                stroke: stroke_color,
+                                strokeWidth: g_thickness,
+                                closed: false
+                            });
+                            drawlayer.add(split);
+                            draw_objects.push(split);
+                        }
+                    }
                 }
             }
             if(g_quater_ellipse_guide)
@@ -639,6 +682,12 @@
     $('#edge_offset_y').on('input', function(e){
         // console.log(e.target.value);
         g_edge_offset_y = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+    
+    $('#cake_split').on('input', function(e){
+        // console.log(e.target.value);
+        g_cake_split = parseInt(e.target.value);
         invalidateDrawings();
     });
 
