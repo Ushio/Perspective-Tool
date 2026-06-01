@@ -151,9 +151,10 @@
     function getPerspectivePoint(perspective_matrix, src_x, src_y)
     {
         const projected = math.multiply(g_perspective_matrix, [src_x, src_y, 1.0]);
-        const p_x = projected.get([0]) / projected.get([2]);
-        const p_y = projected.get([1]) / projected.get([2]);
-        return [p_x, p_y];
+        const w = projected.get([2]);
+        const p_x = projected.get([0]) / w;
+        const p_y = projected.get([1]) / w;
+        return [p_x, p_y, w];
     }
 
     let g_background_image = null;
@@ -360,7 +361,7 @@
             for(let i = 0 ; i < n + 1; i++)
             {
                 let points = [];
-                let points_for_convex = [];
+                let has_bad_vertex = false;
                 for(let j = 0 ; j < 4 ; j++)
                 {
                     const src_x = src_xs[j] + i * 2.0 * x_step * (1.0 + margin);
@@ -368,37 +369,16 @@
 
                     const rotated = math.rotate([src_x, src_y], rotation / 360.0 * math.pi * 2.0);
                     const p_xy = getPerspectivePoint(g_perspective_matrix, rotated[0], rotated[1]);
+                    if(p_xy[2] < 0.0)
+                    {
+                        has_bad_vertex = true;
+                    }
 
                     points.push(p_xy[0]);
                     points.push(p_xy[1]);
-                    points_for_convex.push([p_xy[0], p_xy[1]]);
                 }
 
-                const isConvex = (arr = []) => {
-                    const { length } = arr;
-                    let pre = 0, curr = 0;
-                    
-                    for (let i = 0; i < length; ++i) {
-                        // Calculate edge vectors
-                        let dx1 = arr[(i + 1) % length][0] - arr[i][0];
-                        let dx2 = arr[(i + 2) % length][0] - arr[(i + 1) % length][0];
-                        let dy1 = arr[(i + 1) % length][1] - arr[i][1];
-                        let dy2 = arr[(i + 2) % length][1] - arr[(i + 1) % length][1];
-                        
-                        // Calculate cross product
-                        curr = dx1 * dy2 - dx2 * dy1;
-                        
-                        if (curr != 0) {
-                            // Check if signs are different
-                            if ((curr > 0 && pre < 0) || (curr < 0 && pre > 0))
-                                return false;
-                            else
-                                pre = curr;
-                        }
-                    }
-                    return true;
-                };
-                if (isConvex(points_for_convex) == false)
+                if(has_bad_vertex)
                 {
                     break;
                 }
