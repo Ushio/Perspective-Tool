@@ -17,6 +17,19 @@
 
 <main class="container">
     <section>
+        <div class="input-group input-number-group">
+            <legend>線の太さ(line thickness)</legend>
+            <div style="width: 10px;"></div>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="thickness" class="input-number" type="number" value="1" min="1" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+    </section>
+    <section>
         <label>
         <input id="ellipse_guide" name="terms" type="checkbox" role="switch" />
         楕円ガイド(ellipse guide)
@@ -33,7 +46,8 @@
         <legend>複製(duplication)</legend>
         <div class="grid">
         <div class="input-group input-number-group">
-            <h4 style="width: 100;">+X</h4>
+            <h4>+X</h4>
+            <div style="width: 10px;"></div>
             <div class="input-group-button">
                 <span class="input-number-decrement">-</span>
             </div>
@@ -44,7 +58,8 @@
         </div>
 
         <div class="input-group input-number-group">
-            <h4 style="width: 100;">-X</h4>
+            <h4>-X</h4>
+            <div style="width: 10px;"></div>
             <div class="input-group-button">
                 <span class="input-number-decrement">-</span>
             </div>
@@ -57,7 +72,8 @@
         
         <div class="grid">
         <div class="input-group input-number-group">
-            <h4 style="width: 100;">+Y</h4>
+            <h4>+Y</h4>
+            <div style="width: 10px;"></div>
             <div class="input-group-button">
                 <span class="input-number-decrement">-</span>
             </div>
@@ -68,7 +84,8 @@
         </div>
 
         <div class="input-group input-number-group">
-            <h4 style="width: 100;">-Y</h4>
+            <h4>-Y</h4>
+            <div style="width: 10px;"></div>
             <div class="input-group-button">
                 <span class="input-number-decrement">-</span>
             </div>
@@ -76,7 +93,6 @@
             <div class="input-group-button">
             <span class="input-number-increment">+</span>
             </div>
-        </div>
         </div>
     </section>
     <section>
@@ -90,7 +106,6 @@
             <span class="input-number-increment">+</span>
             </div>
         </div>
-        </div>
     </section>
     <section>
         <legend>回転[正方形の場合](rotation, square case)</legend>
@@ -102,7 +117,6 @@
             <div class="input-group-button">
             <span class="input-number-increment">+</span>
             </div>
-        </div>
         </div>
     </section>
 
@@ -171,6 +185,7 @@
 
     let g_background_image = null;
     let g_perspective_matrix = null;
+    let g_thickness = 1;
     let g_dup_pos_x_axis = 0;
     let g_dup_neg_x_axis = 0;
     let g_dup_pos_y_axis = 0;
@@ -402,7 +417,7 @@
                 const polygon = new Konva.Line({
                     points: points,
                     stroke: 'black',
-                    strokeWidth: 1,
+                    strokeWidth: g_thickness,
                     closed: true
                 });
                 drawlayer.add(polygon);
@@ -442,7 +457,7 @@
                     const ellipse = new Konva.Line({
                         points: points,
                         stroke: 'black',
-                        strokeWidth: 1,
+                        strokeWidth: g_thickness,
                         closed: true
                     });
                     drawlayer.add(ellipse);
@@ -483,7 +498,7 @@
                         const ellipse = new Konva.Line({
                             points: points,
                             stroke: 'black',
-                            strokeWidth: 1,
+                            strokeWidth: g_thickness,
                             closed: false
                         });
                         drawlayer.add(ellipse);
@@ -542,6 +557,12 @@
     })
 
     // UI
+    $('#thickness').on('input', function(e){
+        // console.log(e.target.value);
+        g_thickness = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+
     $('#dup_pos_x_axis').on('input', function(e){
         // console.log(e.target.value);
         g_dup_pos_x_axis = parseInt(e.target.value);
