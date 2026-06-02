@@ -539,7 +539,8 @@
                     {
                         const center_src_x = i * 2.0 * x_step * (1.0 + margin);
                         const center_src_y = i * 2.0 * y_step * (1.0 + margin);
-                        const p_center_xy = getPerspectivePoint(g_perspective_matrix, center_src_x, center_src_y);
+                        const center_rotated = math.rotate([center_src_x, center_src_y], rotation / 360.0 * math.pi * 2.0);
+                        const p_center_xy = getPerspectivePoint(g_perspective_matrix, center_rotated[0], center_rotated[1]);
     
                         for(let j = 0 ; j < g_cake_split + 1 ; j++ )
                         {
@@ -607,7 +608,8 @@
 
                         const center_src_x = (offset_x) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
                         const center_src_y = (offset_y) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
-                        const p_center_xy = getPerspectivePoint(g_perspective_matrix, center_src_x, center_src_y);
+                        const center_rotated = math.rotate([center_src_x, center_src_y], rotation / 360.0 * math.pi * 2.0);
+                        const p_center_xy = getPerspectivePoint(g_perspective_matrix, center_rotated[0], center_rotated[1]);
                         for(let j = 0 ; j < g_cake_split ; j++ )
                         {
                             const theta = (j + 1) / (g_cake_split + 1) * math.pi * 0.5 + base_theta;
