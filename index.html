@@ -43,6 +43,35 @@
     </section>
     <hr>
     <section>
+        <div>均等分割(even split)</div>
+        <div class="grid">
+        <div class="input-group input-number-group">
+            <h4>X</h4>
+            <div style="width: 10px;"></div>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="even_split_x" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+
+        <div class="input-group input-number-group">
+            <h4>Y</h4>
+            <div style="width: 10px;"></div>
+            <div class="input-group-button">
+                <span class="input-number-decrement">-</span>
+            </div>
+            <input id="even_split_y" class="input-number" type="number" value="0" min="0" max="1000">
+            <div class="input-group-button">
+            <span class="input-number-increment">+</span>
+            </div>
+        </div>
+        </div>
+    </section>
+    <hr>
+    <section>
         <label>
         <input id="ellipse_guide" name="terms" type="checkbox" role="switch" />
         楕円ガイド(ellipse guide)
@@ -62,7 +91,7 @@
         </select>
         <br>
         <div class="input-group input-number-group">
-            <div>楕円ガイド ケーキ分割(ellipse cake split)</div>
+            <div>ケーキ分割(cake split)</div>
             <div style="width: 10px;"></div>
             <div class="input-group-button">
                 <span class="input-number-decrement">-</span>
@@ -191,6 +220,10 @@
 <a href="https://github.com/Ushio/Perspective-Tool">Github Repo</a>
 
 <script>
+    function lerp(a, b, t)
+    {
+        return a + (b - a) * t;
+    }
     function getPerspectiveTransform(src_xs, src_ys, dst_xs, dst_ys)
     {
         // Refs
@@ -255,6 +288,10 @@
     let g_margin = 0;
     let g_rotation = 0;
     let g_white_line = false;
+
+    let g_even_split_x = 0;
+    let g_even_split_y = 0;
+
     let g_ellipse_guide = false;
     let g_quater_ellipse_guide = false;
     let g_quater_ellipse_dir = "A";
@@ -493,7 +530,61 @@
                 });
                 drawlayer.add(polygon);
                 draw_objects.push(polygon);
+
+                
+                for( let j = 0 ; j < g_even_split_x ; j++)
+                {
+                    const src_x = lerp(-1.0, 1.0, (1 + j) / (g_even_split_x + 1)) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
+                    const src_y0 = -1.0 * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
+                    const src_y1 = +1.0 * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
+
+                    const rotated0 = math.rotate([src_x, src_y0], rotation / 360.0 * math.pi * 2.0);
+                    const rotated1 = math.rotate([src_x, src_y1], rotation / 360.0 * math.pi * 2.0);
+                    const p_xy0 = getPerspectivePoint(g_perspective_matrix, rotated0[0], rotated0[1]);
+                    const p_xy1 = getPerspectivePoint(g_perspective_matrix, rotated1[0], rotated1[1]);
+
+                    if(p_xy0[2] < 0.0 || p_xy1[2] < 0.0)
+                    {
+                        continue;
+                    }
+
+                    const line = new Konva.Line({
+                        points: [p_xy0[0], p_xy0[1], p_xy1[0], p_xy1[1]],
+                        stroke: stroke_color,
+                        strokeWidth: g_thickness,
+                        closed: true
+                    });
+                    drawlayer.add(line);
+                    draw_objects.push(line);
+                }
+
+                for( let j = 0 ; j < g_even_split_y ; j++)
+                {
+                    const src_x0 = -1.0 * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
+                    const src_x1 = +1.0 * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
+                    const src_y = lerp(-1.0, 1.0, (1 + j) / (g_even_split_y + 1)) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
+
+                    const rotated0 = math.rotate([src_x0, src_y], rotation / 360.0 * math.pi * 2.0);
+                    const rotated1 = math.rotate([src_x1, src_y], rotation / 360.0 * math.pi * 2.0);
+                    const p_xy0 = getPerspectivePoint(g_perspective_matrix, rotated0[0], rotated0[1]);
+                    const p_xy1 = getPerspectivePoint(g_perspective_matrix, rotated1[0], rotated1[1]);
+
+                    if(p_xy0[2] < 0.0 || p_xy1[2] < 0.0)
+                    {
+                        continue;
+                    }
+
+                    const line = new Konva.Line({
+                        points: [p_xy0[0], p_xy0[1], p_xy1[0], p_xy1[1]],
+                        stroke: stroke_color,
+                        strokeWidth: g_thickness,
+                        closed: true
+                    });
+                    drawlayer.add(line);
+                    draw_objects.push(line);
+                }
             }
+
             
             // ellipse
             if(g_ellipse_guide)
@@ -751,6 +842,20 @@
         g_cake_split = parseInt(e.target.value);
         invalidateDrawings();
     });
+
+
+    $('#even_split_x').on('input', function(e){
+        // console.log(e.target.value);
+        g_even_split_x = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+    $('#even_split_y').on('input', function(e){
+        // console.log(e.target.value);
+        g_even_split_y = parseInt(e.target.value);
+        invalidateDrawings();
+    });
+    
+
 
     $('#open_button').on('click', function(){
         const input = document.createElement('input');
