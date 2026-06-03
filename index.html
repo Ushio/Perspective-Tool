@@ -101,10 +101,10 @@
             <span class="input-number-increment">+</span>
             </div>
         </div>
-        <!-- <label>
+        <label>
         ケーキオフセット(cake offset)
-        <input id="cake" type="range" value="100"/>
-        </label> -->
+        <input id="cake_offset" type="range" value="0"/>
+        </label>
     </section>
     <hr>
     <section>
@@ -300,6 +300,7 @@
     let g_quater_ellipse_guide = false;
     let g_quater_ellipse_dir = "A";
     let g_cake_split = 0;
+    let g_cake_offset = 0;
 
     const stage = new Konva.Stage({
         container: 'container',
@@ -451,42 +452,42 @@
         // }
 
         // Arrows
-        if(true)
-        {
-            const center_xy = getPerspectivePoint(g_perspective_matrix, 0, 0);
-            const rotated_to = math.rotate([1.0, 0.0], g_rotation / 360.0 * math.pi * 2.0);
-            const p_xy = getPerspectivePoint(g_perspective_matrix, rotated_to[0], rotated_to[1]);
-            const arrow = new Konva.Arrow({
-                x: center_xy[0],
-                y: center_xy[1],
-                points: [0, 0, p_xy[0] - center_xy[0], p_xy[1] - center_xy[1]],
-                pointerLength: 20,
-                pointerWidth: 20,
-                stroke: 'red',
-                strokeWidth: 3
-            });
+        // if(true)
+        // {
+        //     const center_xy = getPerspectivePoint(g_perspective_matrix, 0, 0);
+        //     const rotated_to = math.rotate([1.0, 0.0], g_rotation / 360.0 * math.pi * 2.0);
+        //     const p_xy = getPerspectivePoint(g_perspective_matrix, rotated_to[0], rotated_to[1]);
+        //     const arrow = new Konva.Arrow({
+        //         x: center_xy[0],
+        //         y: center_xy[1],
+        //         points: [0, 0, p_xy[0] - center_xy[0], p_xy[1] - center_xy[1]],
+        //         pointerLength: 20,
+        //         pointerWidth: 20,
+        //         stroke: 'red',
+        //         strokeWidth: 3
+        //     });
 
-            cplayer.add(arrow);
-            guide_objects.push(arrow);
-        }
-        if(true)
-        {
-            const center_xy = getPerspectivePoint(g_perspective_matrix, 0, 0);
-            const rotated_to = math.rotate([0.0, 1.0], g_rotation / 360.0 * math.pi * 2.0);
-            const p_xy = getPerspectivePoint(g_perspective_matrix, rotated_to[0], rotated_to[1]);
-            const arrow = new Konva.Arrow({
-                x: center_xy[0],
-                y: center_xy[1],
-                points: [0, 0, p_xy[0] - center_xy[0], p_xy[1] - center_xy[1]],
-                pointerLength: 20,
-                pointerWidth: 20,
-                stroke: 'green',
-                strokeWidth: 3
-            });
+        //     cplayer.add(arrow);
+        //     guide_objects.push(arrow);
+        // }
+        // if(true)
+        // {
+        //     const center_xy = getPerspectivePoint(g_perspective_matrix, 0, 0);
+        //     const rotated_to = math.rotate([0.0, 1.0], g_rotation / 360.0 * math.pi * 2.0);
+        //     const p_xy = getPerspectivePoint(g_perspective_matrix, rotated_to[0], rotated_to[1]);
+        //     const arrow = new Konva.Arrow({
+        //         x: center_xy[0],
+        //         y: center_xy[1],
+        //         points: [0, 0, p_xy[0] - center_xy[0], p_xy[1] - center_xy[1]],
+        //         pointerLength: 20,
+        //         pointerWidth: 20,
+        //         stroke: 'green',
+        //         strokeWidth: 3
+        //     });
 
-            cplayer.add(arrow);
-            guide_objects.push(arrow);
-        }
+        //     cplayer.add(arrow);
+        //     guide_objects.push(arrow);
+        // }
 
 
         // Duplication
@@ -639,7 +640,7 @@
     
                         for(let j = 0 ; j < g_cake_split + 1 ; j++ )
                         {
-                            const theta = j / g_cake_split * math.pi * 2.0 + math.pi * 0.25;
+                            const theta = j / g_cake_split * math.pi * 2.0 + (1.0 / g_cake_split * math.pi * 2.0) * g_cake_offset;
                             const src_x = math.sin(theta) * (1.0 + edge_offset_x) + center_src_x;
                             const src_y = math.cos(theta) * (1.0 + edge_offset_y) + center_src_y;
         
@@ -707,7 +708,7 @@
                         const p_center_xy = getPerspectivePoint(g_perspective_matrix, center_rotated[0], center_rotated[1]);
                         for(let j = 0 ; j < (g_cake_split + 1) * 4 ; j++ )
                         {
-                            const theta = j / (g_cake_split + 1) * math.pi * 0.5 + base_theta;
+                            const theta = j / (g_cake_split + 1) * math.pi * 0.5 + base_theta + (1 / (g_cake_split + 1) * math.pi * 0.5) * g_cake_offset;
                             const src_x = (offset_x + math.sin(theta) * 2.0) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
                             const src_y = (offset_y + math.cos(theta) * 2.0) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
         
@@ -926,6 +927,10 @@
 
     $('#quater_ellipse_dir').on('change', function() {
         g_quater_ellipse_dir = this.value;
+        invalidateDrawings();
+    });
+    $('#cake_offset').on('input', function(e){
+        g_cake_offset = parseInt(e.target.value) / 100.0;
         invalidateDrawings();
     });
 </script>
