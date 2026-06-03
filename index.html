@@ -101,6 +101,10 @@
             <span class="input-number-increment">+</span>
             </div>
         </div>
+        <!-- <label>
+        ケーキオフセット(cake offset)
+        <input id="cake" type="range" value="100"/>
+        </label> -->
     </section>
     <hr>
     <section>
@@ -666,7 +670,7 @@
                     {
                         let points = [];
                         let has_bad_vertex = false;
-                        for(let j = 0 ; j < n_verts ; j++)
+                        for(let j = 0 ; j < n_verts * 4 ; j++)
                         {
                             const theta = j / n_verts * math.pi * 0.5 + base_theta;
                             const src_x = (offset_x + math.sin(theta) * 2.0) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
@@ -692,7 +696,7 @@
                             points: points,
                             stroke: stroke_color,
                             strokeWidth: g_thickness,
-                            closed: false
+                            closed: true
                         });
                         drawlayer.add(ellipse);
                         draw_objects.push(ellipse);
@@ -701,9 +705,9 @@
                         const center_src_y = (offset_y) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
                         const center_rotated = math.rotate([center_src_x, center_src_y], rotation / 360.0 * math.pi * 2.0);
                         const p_center_xy = getPerspectivePoint(g_perspective_matrix, center_rotated[0], center_rotated[1]);
-                        for(let j = 0 ; j < g_cake_split ; j++ )
+                        for(let j = 0 ; j < (g_cake_split + 1) * 4 ; j++ )
                         {
-                            const theta = (j + 1) / (g_cake_split + 1) * math.pi * 0.5 + base_theta;
+                            const theta = j / (g_cake_split + 1) * math.pi * 0.5 + base_theta;
                             const src_x = (offset_x + math.sin(theta) * 2.0) * (1.0 + edge_offset_x) + i * 2.0 * x_step * (1.0 + margin);
                             const src_y = (offset_y + math.cos(theta) * 2.0) * (1.0 + edge_offset_y) + i * 2.0 * y_step * (1.0 + margin);
         
